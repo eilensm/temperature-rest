@@ -1,0 +1,58 @@
+<html>
+<head>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script type="text/javascript" src="https://cdn.rawgit.com/nnnick/Chart.js/master/Chart.js"></script>
+</head>
+
+<body>  
+	<h1>Temperaturen und Luftfeuchtigkeit</h1>
+
+	<button id="json">Aktualisieren</button>
+	<p/>
+	<label for="size" value="size">size: </label><input id="size" type="text"/>
+	<p/>
+	<canvas id="myChart" width="1200" height="400"></canvas>
+
+	<script type="text/javascript">
+        
+	    var myLineChart = null;
+		
+		$('#size').bind('keypress', function(e) {
+			var code = e.keyCode || e.which;
+			if(code === 13) { //Enter keycode
+				update();
+			}
+		});
+		
+		var update = function(){
+		    var uri = "/temperature-rest";
+			var size = $("#size").val();
+			if(!(size === '')) {
+				uri += "/params?size=" + size;
+			}
+			$.getJSON(uri,
+			 function(data) {
+		        if (myLineChart != null) {
+					myLineChart.clear();
+					myLineChart.destroy();
+				}				
+			    var canvas = document.getElementById("myChart");
+				var ctx = canvas.getContext("2d");
+				ctx.clearRect(0, 0, canvas.width, canvas.height );
+				myLineChart = new Chart(ctx).Line(data[0], {
+					responsive: true,
+					scaleShowLabels: true,
+					pointHitDetectionRadius : 5
+				});			
+			  });   
+		};
+		
+		$('#json').click(update);
+		
+		window.onload = update();
+		
+	</script>
+
+</body>
+
+</html>
