@@ -79,14 +79,6 @@
    :datasets [(build-dataset data "humidity" humidity-options)
               (build-dataset data "temperature" temperature-options)]})
 
-(defn read-chart-data-threadlast
-  []
-  (->
-    (read-data)
-    (adjust-data-amount 40)
-    (chartjs-data)
-    (list)))
-
 (defn avg
   "Ermittelt den Durchschnittswert für eine Liste von Zahlen"
   [operands]
