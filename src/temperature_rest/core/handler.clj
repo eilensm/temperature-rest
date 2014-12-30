@@ -16,8 +16,8 @@
 
 (defroutes app-routes
   (context "/temperature-rest" [] (defroutes temperature-routes
-                                    (GET  "/" [] (read-chart-data))
-                                    (GET "/params" request (read-chart-data-with-size request))
+                                    ;(GET  "/" [] (read-chart-data))
+                                    (GET "/" request (read-chart-data-with-size request))
                                (route/resources "/"))))
 (def app
   (-> (handler/api app-routes)
@@ -130,8 +130,8 @@
 (defn read-chart-data-with-size
   "Schnittstelle für den REST-Service mit Angabe der zu liefernden Datensätze"
   [request]
-  (->> (get-in request [:params :size])
-    (read-string)
-    (plane-data (read-data))
-    (chartjs-data)
-    (list)))
+  (let [size (get-in request [:params :size])]
+    (->> (if (nil? size) 40 (read-string size))
+      (plane-data (read-data))
+      (chartjs-data)
+      (list))))
