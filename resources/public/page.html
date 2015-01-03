@@ -34,16 +34,25 @@
 		var handleQueryParam = function(queryParamId) {
 			var paramValue = $("#" + queryParamId).val();
 			if(!(paramValue === '')) {
-				return "?" + queryParamId + "=" + paramValue;
+				return queryParamId + "=" + paramValue;
 			} else {
-				return "";
+				return null;
 			}
 		}
 		
 		var update = function(){
 		    var uri = "/temperature-rest";			
-			uri += handleQueryParam("size");
-			uri += handleQueryParam("days");
+			var sizeParam = handleQueryParam("size");
+			var useParamSeparator = false;
+			if(sizeParam != null) {
+				uri += "?" + sizeParam;
+				useParamSeparator = true;
+			}
+			var daysParam = handleQueryParam("days");
+			if(daysParam != null) {
+				uri += (useParamsSeparator ? "&" : "?") + daysParam;
+				useParamsSeparator = true;
+			}
 			$.getJSON(uri,
 			 function(data) {
 		        if (myLineChart != null) {
