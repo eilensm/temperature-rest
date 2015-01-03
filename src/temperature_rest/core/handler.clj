@@ -13,6 +13,8 @@
 (declare read-chart-data)
 (declare read-chart-data-with-size)
 (declare chartjs-data)
+(def time-formatter
+  (f/formatter "dd.MM.yyyy HH:mm:ss"))
 
 (defroutes app-routes
   (context "/temperature-rest" [] (defroutes temperature-routes
@@ -40,6 +42,12 @@
   []
   (with-open [rdr (io/reader filename)]
     (doall (remove nil? (mapv parse-line (line-seq rdr))))))
+
+(defn filter-days
+  "Filtert aus den Daten die Daten für die letzten n Tage heraus"
+  [data days]
+  (filter #(t/after? (f/parse time-formatter (:timestamp %)) (t/ago (t/days days)))
+          data))
 
 (defn read-data2
   ; wie read-data nur mit thread-last macro
@@ -85,8 +93,6 @@
   (/ (apply + operands)
      (count operands)))
 
-(def time-formatter
-  (f/formatter "dd.MM.yyyy HH:mm:ss"))
 
 (defn avg-time
   "Ermittelt für die Liste der Timestamps (als Strings) einen in der Mitte liegenden Timestamp (als String)"
@@ -130,8 +136,13 @@
 (defn read-chart-data-with-size
   "Schnittstelle für den REST-Service mit Angabe der zu liefernden Datensätze"
   [request]
-  (let [size (get-in request [:params :size])]
-    (->> (if (nil? size) 40 (read-string size))
-      (plane-data (read-data))
+  (let [size (get-in request [:params :size])
+        days (get-in request [:params :days])
+        data (if (nil? days) (read-data) (filter-days (read-data) (read-string days)))]
+    (->> (if (nil? size)
+           40
+           (read-string size))
+      (plane-data data)
       (chartjs-data)
       (list))))
+

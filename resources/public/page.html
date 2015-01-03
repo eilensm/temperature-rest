@@ -7,7 +7,9 @@
 <body>  
 	<h1>Temperaturen und Luftfeuchtigkeit</h1>
 
-	<label for="size" value="size">max. Anzahl Datensätze: </label><input id="size" type="text" size="3" maxlength="4"/>
+	<label for="size">max. Anzahl Datensätze: </label><input id="size" type="number" size="3" maxlength="4"/>
+	<p/>
+	<label for="days">Anzahl Tage bis heute: </label><input id="days" type="number" size="3" maxlength="4"/>
 	<p/>
 	<button id="json">Aktualisieren</button>
 	<p/>
@@ -17,19 +19,31 @@
         
 	    var myLineChart = null;
 		
-		$('#size').bind('keypress', function(e) {
-			var code = e.keyCode || e.which;
-			if(code === 13) { //Enter keycode
-				update();
+		var attachReturn = function (inputId) {
+			$("#" + inputId).bind('keypress', function(e) {
+				var code = e.keyCode || e.which;
+				if(code === 13) { //Enter keycode
+					update();
+				}
+			});
+		}
+		
+		attachReturn("size");
+		attachReturn("days");
+		
+		var handleQueryParam = function(queryParamId) {
+			var paramValue = $("#" + queryParamId).val();
+			if(!(paramValue === '')) {
+				return "?" + queryParamId + "=" + paramValue;
+			} else {
+				return "";
 			}
-		});
+		}
 		
 		var update = function(){
-		    var uri = "/temperature-rest";
-			var size = $("#size").val();
-			if(!(size === '')) {
-				uri += "?size=" + size;
-			}
+		    var uri = "/temperature-rest";			
+			uri += handleQueryParam("size");
+			uri += handleQueryParam("days");
 			$.getJSON(uri,
 			 function(data) {
 		        if (myLineChart != null) {
