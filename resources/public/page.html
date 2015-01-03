@@ -50,8 +50,8 @@
 			}
 			var daysParam = handleQueryParam("days");
 			if(daysParam != null) {
-				uri += (useParamsSeparator ? "&" : "?") + daysParam;
-				useParamsSeparator = true;
+				uri += (useParamSeparator ? "&" : "?") + daysParam;
+				useParamSeparator = true;
 			}
 			$.getJSON(uri,
 			 function(data) {
