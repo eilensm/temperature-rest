@@ -8,7 +8,8 @@
             [clojure.string :as str]
             [clj-time.core :as t]
             [clj-time.format :as f]
-            [clj-time.coerce :as c]))
+            [clj-time.coerce :as c]
+            [iota :as iota]))
 
 (declare read-chart-data)
 (declare read-chart-data-with-size)
@@ -42,6 +43,13 @@
   []
   (with-open [rdr (io/reader filename)]
     (doall (remove nil? (mapv parse-line (line-seq rdr))))))
+
+; test for reading the file with the iota library (but it doesn't seem to be really faster, perhaps the file of my test was not large enough)
+(defn read-data-iota
+  []
+  (->> (iota/seq filename)
+    (mapv parse-line)
+    (remove nil?)))
 
 (defn filter-days
   "Filtert aus den Daten die Daten für die letzten n Tage heraus"
@@ -93,7 +101,6 @@
   (/ (apply + operands)
      (count operands)))
 
-
 (defn avg-time
   "Ermittelt für die Liste der Timestamps (als Strings) einen in der Mitte liegenden Timestamp (als String)"
   [timestamps]
@@ -134,14 +141,12 @@
   (list (chartjs-data (plane-data (read-data) 40))))
 
 (defn read-chart-data-with-size
-  "Schnittstelle für den REST-Service mit Angabe der zu liefernden Datensätze"
+  "Schnittstelle für den REST-Service mit Angabe der Anzahl zu liefernden Datensätze (optional) sowie der Anzahl der letzten n anzuzeigenden Tage bis heute (optional)"
   [request]
   (let [size (get-in request [:params :size])
         days (get-in request [:params :days])
         data (if (nil? days) (read-data) (filter-days (read-data) (read-string days)))]
-    (->> (if (nil? size)
-           40
-           (read-string size))
+    (->> (if (nil? size) 40 (read-string size))
       (plane-data data)
       (chartjs-data)
       (list))))
